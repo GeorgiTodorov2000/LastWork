@@ -1,0 +1,198 @@
+import java.util.Random;
+import java.util.Scanner;
+
+public class main {
+    public static Scanner SCAN = new Scanner(System.in);
+    public static Random RAND = new Random();
+    public static int TRAP_COUNT = 0;
+    public static int Invest_COUNT = 0;
+    public static int Steal_COUNT = 0;
+    public static int Party_COUNT = 0;
+    public static int Chance_COUNT = 0;
+    public static int FIRST_CHANGE = 0;
+    public static int ARRAY_SIZE = 32;
+    public static int PLAYERS = 0;
+    public static int TURN_COUNTER = 0;
+    public static int TURN = RAND.nextInt(2);
+    public static String[] GAME_BOARD_WITH_TRAPS = new String[32];
+    public static int[] CANDIES = new int[20];
+    public static String[] PLAYER_NAMES = new String[20];
+    public static int BROKEN = 0;
+    public static int ROUND = 0;
+
+    public static void main(String[] args) {
+        gameStart();
+        gameBoard();
+        game();
+    }
+    public static void gameStart() {
+        System.out.println("How many players are out there");
+        PLAYERS = SCAN.nextInt();
+        for (int i = 0; i < PLAYERS; i++) {
+            System.out.println("Enter Player Name");
+            PLAYER_NAMES[i] = SCAN.next();
+            CANDIES[i] = 1000;
+        }
+
+    }
+    public static String[] gameBoard() {
+        String[] gameBoard = new String[ARRAY_SIZE];
+        for (int i = 0; i < ARRAY_SIZE; i++) {
+            gameBoard[i] = "|X|";
+        }
+        for (int i = 9; i < 15; i++) {
+            GAME_BOARD_WITH_TRAPS[i] = "   ";
+            gameBoard[i] = "   ";
+        }
+        for (int i = 17; i < 23; i++) {
+            GAME_BOARD_WITH_TRAPS[i] = "   ";
+            gameBoard[i] = "   ";
+        }
+        GAME_BOARD_WITH_TRAPS[ARRAY_SIZE - 1] = "|*|";
+        gameBoard[ARRAY_SIZE - 1] = "|*|";
+        arrayWithTraps(gameBoard);
+        printArray(GAME_BOARD_WITH_TRAPS);
+        String playerStats =  PLAYER_NAMES[TURN] + " have " + CANDIES[TURN] + " candies and pos " + newPos();
+        System.out.println(playerStats);
+        return gameBoard;
+    }
+
+    public static int playerPos() {
+        int[] playerPos = new int[PLAYERS];
+        for (int i = 0; i < PLAYERS; i++) {
+            if(TURN_COUNTER == 0) {
+                playerPos[i] = 20;
+            }
+        }
+        return playerPos[TURN];
+    }
+
+    public static void game() {
+
+        String[] winner = new String[2];
+        for(int i = 0; i < PLAYERS; i++) {
+            if(CANDIES[i] <= 0) {
+                BROKEN++;
+            }
+            if(BROKEN == PLAYERS-1) {
+                System.out.println("WInner is:" + PLAYER_NAMES[i]);
+                System.exit(1);
+            }
+        }
+
+        playerTurn();
+        game();
+    }
+    public static int newPos() {
+        int oldPos = playerPos();
+        int newPos = oldPos - dice();
+        return newPos;
+    }
+
+    public static void playerTurn() {
+        if(TURN == PLAYERS) {
+            TURN = 0;
+        } else {
+            TURN++;
+        }
+    }
+
+    public static void printArray(String[] gameBoard) {
+        int count = 0;
+        for (String array : gameBoard) {
+            System.out.print(array);
+            count++;
+            if (count % 8 == 0) {
+                System.out.println("");
+            }
+        }
+    }
+
+    public static void printTrap(int i) {
+        if (TRAP_COUNT < 7) {
+            GAME_BOARD_WITH_TRAPS[i] = "|T|";
+            TRAP_COUNT++;
+        } else {
+            printSteal(i);
+        }
+    }
+
+    public static void printSteal(int i) {
+        if (Steal_COUNT < 3) {
+            GAME_BOARD_WITH_TRAPS[i] = "|S|";
+            Steal_COUNT++;
+        } else {
+            printInvest(i);
+        }
+    }
+
+    public static void printInvest(int i) {
+        if (Invest_COUNT < 3) {
+            GAME_BOARD_WITH_TRAPS[i] = "|I|";
+            Invest_COUNT++;
+        } else {
+            printParty(i);
+        }
+    }
+
+    public static void printParty(int i) {
+        if (Party_COUNT < 3) {
+            GAME_BOARD_WITH_TRAPS[i] = "|P|";
+            Party_COUNT++;
+        } else {
+            printChance(i);
+        }
+
+    }
+
+    public static void printChance(int i) {
+        if (Chance_COUNT < 3) {
+            GAME_BOARD_WITH_TRAPS[i] = "|C|";
+            Chance_COUNT++;
+        } else {
+            printTrap(i);
+        }
+    }
+
+
+    public static String[] arrayWithTraps(String[] gameBoard) {
+        for (int i = 0; i < ARRAY_SIZE - 1; i++) {
+            if (gameBoard[i].equals("|X|")) {
+                int event = RAND.nextInt(5);
+                switch (event) {
+                    case 0:
+                        printTrap(i);
+                        break;
+                    case 1:
+                        printChance(i);
+                        break;
+                    case 2:
+                        printInvest(i);
+                        break;
+                    case 3:
+                        printSteal(i);
+                        break;
+                    case 4:
+                        printParty(i);
+                        break;
+                }
+            }
+        }
+        trapReset();
+        FIRST_CHANGE++;
+        return gameBoard;
+    }
+    public static int dice() {
+        int dice = RAND.nextInt(2);
+        dice++;
+        return dice;
+    }
+    public static void trapReset() {
+        Chance_COUNT = 0;
+        Steal_COUNT = 0;
+        TRAP_COUNT = 0;
+        Invest_COUNT = 0;
+        Party_COUNT = 0;
+    }
+}
+
